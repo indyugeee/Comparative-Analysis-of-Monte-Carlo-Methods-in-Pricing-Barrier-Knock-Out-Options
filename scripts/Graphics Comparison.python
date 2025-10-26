@@ -1,0 +1,469 @@
+#UP AND OUT CALL
+np.random.seed(2023)
+
+#nilai MC standar
+iteration_values1 = []  # List to store a at each iteration
+lower_confidence_intervals1 = []  # List to store lower bounds of the confidence intervals
+upper_confidence_intervals1 = []  # List to store upper bounds of the confidence intervals
+std1 = []
+
+#nilai ANT
+iteration_values2 = []
+lower_confidence_intervals2 = []
+upper_confidence_intervals2 = []
+std2 = []
+
+#nilai CV
+iteration_values3 = []
+lower_confidence_intervals3 = []
+upper_confidence_intervals3 = []
+std3 = []
+
+#parameter
+S = 7450  # Harga saham saat ini
+K = 8000   # Harga pelaksanaan
+B = 25000  # Nilai barrier
+m = 252 #banyak waktu kerja
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.35  # Volatilitas
+Br = B * np.exp(0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier up
+SAMPLE = [2**i for i in range(5, 18)]  # Ukuran sample
+
+analitik = up_and_out_call(S,K,r,T,sigma,Br)
+
+for n in SAMPLE :
+    a1,var1 = up_and_out_call_monte_carlo(S, K, B, T, r, sigma, n)
+    b1 = np.sqrt(var1)
+    BB1 = a1 - 1.96 * b1/np.sqrt(n)
+    BA1 = a1 + 1.96 * b1/np.sqrt(n)
+    lower_confidence_intervals1.append(BB1)
+    upper_confidence_intervals1.append(BA1)
+    iteration_values1.append(a1)
+    std1.append(b1)
+
+    a2,var2 = up_and_out_call_monte_carlo_ANT(S, K, B, T, r, sigma, n)
+    b2 = np.sqrt(var2)
+    BB2 = a2 - 1.96 * b2/np.sqrt(n)
+    BA2 = a2 + 1.96 * b2/np.sqrt(n)
+    lower_confidence_intervals2.append(BB2)
+    upper_confidence_intervals2.append(BA2)
+    iteration_values2.append(a2)
+    std2.append(b2)
+
+    a3,var3 = up_and_out_call_monte_carlo_cv(S, K, B, T, r, sigma, n)
+    b3 = np.sqrt(var3)
+    BB3 = a3 - 1.96 * b3/np.sqrt(n)
+    BA3 = a3 + 1.96 * b3/np.sqrt(n)
+    lower_confidence_intervals3.append(BB3)
+    upper_confidence_intervals3.append(BA3)
+    iteration_values3.append(a3)
+    std3.append(b3)
+import matplotlib.pyplot as plt
+
+x = np.linspace(SAMPLE[0], SAMPLE[-1], len(iteration_values1))
+
+plt.errorbar(x, iteration_values1,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals1, upper_confidence_intervals1)],
+             fmt='o', capsize=5,label = 'MC STANDAR')
+
+plt.errorbar(x, iteration_values2,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals2, upper_confidence_intervals2)],
+             fmt='o', capsize=5,label = 'MC ANTHITETIC VARIATE')
+
+plt.errorbar(x, iteration_values3,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals3, upper_confidence_intervals3)],
+             fmt='o', capsize=5,label = 'MC control variate')
+
+plt.axhline(analitik, color='red', linestyle='--', label='nilai analitik')
+plt.xlabel('sample size')
+plt.ylabel('Option Price')
+
+plt.legend()
+plt.title('Gambar 1. Opsi Beli Barrier Up and Out')
+
+plt.grid(True)
+plt.show()
+
+import pandas as pd
+
+# Combine lower and upper confidence intervals for iteration_values1
+confidence_intervals_1 = list(zip(lower_confidence_intervals1, upper_confidence_intervals1))
+
+# Combine lower and upper confidence intervals for iteration_values2
+confidence_intervals_2 = list(zip(lower_confidence_intervals2, upper_confidence_intervals2))
+
+confidence_intervals_3 = list(zip(lower_confidence_intervals3, upper_confidence_intervals3))
+
+
+# Create a DataFrame to store the data
+data = {
+    'Sample Size': SAMPLE,
+    'Aproksimasi MC standar': iteration_values1,
+    'Confidence Intervals MC standar': confidence_intervals_1,
+    'std MC standar': std1,
+    'Aproksimasi MC ANTHITETIC VARIATE': iteration_values2,
+    'Confidence Intervals MC ANTHITETIC VARIATE': confidence_intervals_2,
+    'std  MC ANTHITETIC VARIATE': std2,
+    'Aproksimasi MC CONTROL VARIATE': iteration_values3,
+    'Confidence Intervals MC CONTROL VARIATE': confidence_intervals_3,
+    'std  MC CONTROL VARIATE': std3,
+    'nilai analitik': analitik
+}
+
+df = pd.DataFrame(data)
+
+# Display the DataFrame
+df
+
+#DOWN AND OUT CALL
+np.random.seed(2023)
+
+#nilai MC standar
+iteration_values1 = []  # List to store a at each iteration
+lower_confidence_intervals1 = []  # List to store lower bounds of the confidence intervals
+upper_confidence_intervals1 = []  # List to store upper bounds of the confidence intervals
+std1 = []
+
+#nilai ANT
+iteration_values2 = []
+lower_confidence_intervals2 = []
+upper_confidence_intervals2 = []
+std2 = []
+
+#nilai CV
+iteration_values3 = []
+lower_confidence_intervals3 = []
+upper_confidence_intervals3 = []
+std3 = []
+
+# Parameter
+S = 5500  # Harga saham saat ini
+K = 6500   # Harga pelaksanaan
+B = 4500  # Nilai barrier
+m = 252 #hari kerja
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.35  # Volatilitas
+Br = B * np.exp(-0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier down
+SAMPLE = [2**i for i in range(5, 18)]  # Ukuran sample
+
+analitik = down_and_out_call(S,K,r,T,sigma,Br)
+
+for n in SAMPLE :
+    a1,var1 = Down_and_out_call_monte_carlo(S, K, B, T, r, sigma, n)
+    b1 = np.sqrt(var1)
+    BB1 = a1 - 1.96 * b1/np.sqrt(n)
+    BA1 = a1 + 1.96 * b1/np.sqrt(n)
+    lower_confidence_intervals1.append(BB1)
+    upper_confidence_intervals1.append(BA1)
+    iteration_values1.append(a1)
+    std1.append(b1)
+
+    a2,var2 = down_and_out_call_monte_carlo_ANT(S, K, B, T, r, sigma, n)
+    b2 = np.sqrt(var2)
+    BB2 = a2 - 1.96 * b2/np.sqrt(n)
+    BA2 = a2 + 1.96 * b2/np.sqrt(n)
+    lower_confidence_intervals2.append(BB2)
+    upper_confidence_intervals2.append(BA2)
+    iteration_values2.append(a2)
+    std2.append(b2)
+
+    a3,var3 = down_and_out_call_monte_carlo_cv(S, K, B, T, r, sigma, n)
+    b3 = np.sqrt(var3)
+    BB3 = a3 - 1.96 * b3/np.sqrt(n)
+    BA3 = a3 + 1.96 * b3/np.sqrt(n)
+    lower_confidence_intervals3.append(BB3)
+    upper_confidence_intervals3.append(BA3)
+    iteration_values3.append(a3)
+    std3.append(b3)
+ import matplotlib.pyplot as plt
+
+x = np.linspace(SAMPLE[0], SAMPLE[-1], len(iteration_values1))
+
+plt.errorbar(x, iteration_values1,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals1, upper_confidence_intervals1)],
+             fmt='o', capsize=5,label = 'MC STANDAR')
+
+plt.errorbar(x, iteration_values2,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals2, upper_confidence_intervals2)],
+             fmt='o', capsize=5,label = 'MC ANT')
+
+plt.errorbar(x, iteration_values3,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals3, upper_confidence_intervals3)],
+             fmt='o', capsize=5,label = 'MC control variate')
+
+plt.axhline(analitik, color='red', linestyle='--', label='nilai analitik')
+plt.xlabel('sample size')
+plt.ylabel('Option Price')
+
+plt.legend()
+plt.title('Gambar 2. Opsi Beli Barrier Down and Out')
+plt.grid(True)
+plt.show()
+
+import pandas as pd
+
+# Combine lower and upper confidence intervals for iteration_values1
+confidence_intervals_1 = list(zip(lower_confidence_intervals1, upper_confidence_intervals1))
+
+# Combine lower and upper confidence intervals for iteration_values2
+confidence_intervals_2 = list(zip(lower_confidence_intervals2, upper_confidence_intervals2))
+
+confidence_intervals_3 = list(zip(lower_confidence_intervals3, upper_confidence_intervals3))
+
+
+# Create a DataFrame to store the data
+data = {
+    'Sample Size': SAMPLE,
+    'Aproksimasi MC standar': iteration_values1,
+    'Confidence Intervals MC standar': confidence_intervals_1,
+    'std MC standar': std1,
+    'Aproksimasi MC ANTHITETIC VARIATE': iteration_values2,
+    'Confidence Intervals MC ANTHITETIC VARIATE': confidence_intervals_2,
+    'std  MC ANTHITETIC VARIATE': std2,
+    'Aproksimasi MC CONTROL VARIATE': iteration_values3,
+    'Confidence Intervals MC CONTROL VARIATE': confidence_intervals_3,
+    'std  MC CONTROL VARIATE': std3,
+    'nilai analitik': analitik
+}
+
+df = pd.DataFrame(data)
+
+# Display the DataFrame
+df
+
+#UP AND OUT PUT
+np.random.seed(2023)
+
+#nilai MC standar
+iteration_values1 = []  # List to store a at each iteration
+lower_confidence_intervals1 = []  # List to store lower bounds of the confidence intervals
+upper_confidence_intervals1 = []  # List to store upper bounds of the confidence intervals
+std1 = []
+
+#nilai ANT
+iteration_values2 = []
+lower_confidence_intervals2 = []
+upper_confidence_intervals2 = []
+std2 = []
+
+#nilai CV
+iteration_values3 = []
+lower_confidence_intervals3 = []
+upper_confidence_intervals3 = []
+std3 = []
+
+# Parameter
+S = 4400  # Harga saham saat ini
+K = 5600   # Harga pelaksanaan
+B = 5300  # Nilai barrier
+m = 252 # hari kerja
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.5  # Volatilitas
+Br = B * np.exp(0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier down
+SAMPLE = [2**i for i in range(5, 18)]  # Ukuran sample
+
+analitik = up_and_out_put(S,K,r,T,sigma,Br)
+
+for n in SAMPLE :
+    a1,var1 = Up_and_out_put_monte_carlo(S, K, B, T, r, sigma, n)
+    b1 = np.sqrt(var1)
+    BB1 = a1 - 1.96 * b1/np.sqrt(n)
+    BA1 = a1 + 1.96 * b1/np.sqrt(n)
+    lower_confidence_intervals1.append(BB1)
+    upper_confidence_intervals1.append(BA1)
+    iteration_values1.append(a1)
+    std1.append(b1)
+
+    a2,var2 = up_and_out_put_monte_carlo_ANT(S, K, B, T, r, sigma, n)
+    b2 = np.sqrt(var2)
+    BB2 = a2 - 1.96 * b2/np.sqrt(n)
+    BA2 = a2 + 1.96 * b2/np.sqrt(n)
+    lower_confidence_intervals2.append(BB2)
+    upper_confidence_intervals2.append(BA2)
+    iteration_values2.append(a2)
+    std2.append(b2)
+
+    a3,var3 = up_and_out_put_monte_carlo_cv(S, K, B, T, r, sigma, n)
+    b3 = np.sqrt(var3)
+    BB3 = a3 - 1.96 * b3/np.sqrt(n)
+    BA3 = a3 + 1.96 * b3/np.sqrt(n)
+    lower_confidence_intervals3.append(BB3)
+    upper_confidence_intervals3.append(BA3)
+    iteration_values3.append(a3)
+    std3.append(b3)
+ import matplotlib.pyplot as plt
+
+x = np.linspace(SAMPLE[0], SAMPLE[-1], len(iteration_values1))
+
+plt.errorbar(x, iteration_values1,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals1, upper_confidence_intervals1)],
+             fmt='o', capsize=5,label = 'MC STANDAR')
+
+plt.errorbar(x, iteration_values2,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals2, upper_confidence_intervals2)],
+             fmt='o', capsize=5,label = 'MC ANT')
+
+plt.errorbar(x, iteration_values3,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals3, upper_confidence_intervals3)],
+             fmt='o', capsize=5,label = 'MC control variate')
+
+
+plt.axhline(analitik, color='red', linestyle='--', label='nilai analitik')
+plt.xlabel('sample size')
+plt.ylabel('Option Price')
+
+plt.legend()
+plt.title('Gambar 3. Opsi Jual Barrier Up and Out')
+plt.grid(True)
+plt.show()
+
+import pandas as pd
+
+# Combine lower and upper confidence intervals for iteration_values1
+confidence_intervals_1 = list(zip(lower_confidence_intervals1, upper_confidence_intervals1))
+
+# Combine lower and upper confidence intervals for iteration_values2
+confidence_intervals_2 = list(zip(lower_confidence_intervals2, upper_confidence_intervals2))
+
+confidence_intervals_3 = list(zip(lower_confidence_intervals3, upper_confidence_intervals3))
+
+
+# Create a DataFrame to store the data
+data = {
+    'Sample Size': SAMPLE,
+    'Aproksimasi MC standar': iteration_values1,
+    'Confidence Intervals MC standar': confidence_intervals_1,
+    'std MC standar': std1,
+    'Aproksimasi MC ANTHITETIC VARIATE': iteration_values2,
+    'Confidence Intervals MC ANTHITETIC VARIATE': confidence_intervals_2,
+    'std  MC ANTHITETIC VARIATE': std2,
+    'Aproksimasi MC CONTROL VARIATE': iteration_values3,
+    'Confidence Intervals MC CONTROL VARIATE': confidence_intervals_3,
+    'std  MC CONTROL VARIATE': std3,
+    'nilai analitik': analitik
+}
+
+df = pd.DataFrame(data)
+
+# Display the DataFrame
+df
+
+#DOWN AND OUT PUT
+np.random.seed(2023)
+
+#nilai MC standar
+iteration_values1 = []  # List to store a at each iteration
+lower_confidence_intervals1 = []  # List to store lower bounds of the confidence intervals
+upper_confidence_intervals1 = []  # List to store upper bounds of the confidence intervals
+std1 = []
+
+#nilai ANT
+iteration_values2 = []
+lower_confidence_intervals2 = []
+upper_confidence_intervals2 = []
+std2 = []
+
+#nilai CV
+iteration_values3 = []
+lower_confidence_intervals3 = []
+upper_confidence_intervals3 = []
+std3 = []
+
+# Parameter
+S = 9000  # Harga saham saat ini
+K = 10000   # Harga pelaksanaan
+B = 5000  # Nilai barrier
+m = 252 #hari kerja
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.35  # Volatilitas
+Br = B * np.exp(-0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier down
+SAMPLE = [2**i for i in range(5, 18)]  # Ukuran sample
+
+analitik = down_and_out_put(S,K,r,T,sigma,Br)
+
+for n in SAMPLE :
+    a1,var1 = Down_and_out_put_monte_carlo(S, K, B, T, r, sigma, n)
+    b1 = np.sqrt(var1)
+    BB1 = a1 - 1.96 * b1/np.sqrt(n)
+    BA1 = a1 + 1.96 * b1/np.sqrt(n)
+    lower_confidence_intervals1.append(BB1)
+    upper_confidence_intervals1.append(BA1)
+    iteration_values1.append(a1)
+    std1.append(b1)
+
+    a2,var2 = down_and_out_put_monte_carlo_ANT(S, K, B, T, r, sigma, n)
+    b2 = np.sqrt(var2)
+    BB2 = a2 - 1.96 * b2/np.sqrt(n)
+    BA2 = a2 + 1.96 * b2/np.sqrt(n)
+    lower_confidence_intervals2.append(BB2)
+    upper_confidence_intervals2.append(BA2)
+    iteration_values2.append(a2)
+    std2.append(b2)
+
+    a3,var3 = down_and_out_put_monte_carlo_cv(S, K, B, T, r, sigma, n)
+    b3 = np.sqrt(var3)
+    BB3 = a3 - 1.96 * b3/np.sqrt(n)
+    BA3 = a3 + 1.96 * b3/np.sqrt(n)
+    lower_confidence_intervals3.append(BB3)
+    upper_confidence_intervals3.append(BA3)
+    iteration_values3.append(a3)
+    std3.append(b3)
+import matplotlib.pyplot as plt
+
+x = np.linspace(SAMPLE[0], SAMPLE[-1], len(iteration_values1))
+
+plt.errorbar(x, iteration_values1,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals1, upper_confidence_intervals1)],
+             fmt='o', capsize=5,label = 'MC STANDAR')
+
+plt.errorbar(x, iteration_values2,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals2, upper_confidence_intervals2)],
+             fmt='o', capsize=5,label = 'MC ANT')
+
+plt.errorbar(x, iteration_values3,
+             yerr=[(upper - lower) / 2 for lower, upper in zip(lower_confidence_intervals3, upper_confidence_intervals3)],
+             fmt='o', capsize=5,label = 'MC control variate')
+
+plt.axhline(analitik, color='red', linestyle='--', label='nilai analitik')
+plt.xlabel('sample size')
+plt.ylabel('Option Price')
+
+plt.legend()
+plt.title('Gambar 4. Opsi Jual Barrier Down and Out')
+plt.grid(True)
+plt.show()
+
+import pandas as pd
+
+# Combine lower and upper confidence intervals for iteration_values1
+confidence_intervals_1 = list(zip(lower_confidence_intervals1, upper_confidence_intervals1))
+
+# Combine lower and upper confidence intervals for iteration_values2
+confidence_intervals_2 = list(zip(lower_confidence_intervals2, upper_confidence_intervals2))
+
+confidence_intervals_3 = list(zip(lower_confidence_intervals3, upper_confidence_intervals3))
+
+
+# Create a DataFrame to store the data
+data = {
+    'Sample Size': SAMPLE,
+    'Aproksimasi MC standar': iteration_values1,
+    'Confidence Intervals MC standar': confidence_intervals_1,
+    'std MC standar': std1,
+    'Aproksimasi MC ANTHITETIC VARIATE': iteration_values2,
+    'Confidence Intervals MC ANTHITETIC VARIATE': confidence_intervals_2,
+    'std  MC ANTHITETIC VARIATE': std2,
+    'Aproksimasi MC CONTROL VARIATE': iteration_values3,
+    'Confidence Intervals MC CONTROL VARIATE': confidence_intervals_3,
+    'std  MC CONTROL VARIATE': std3,
+    'nilai analitik': analitik
+}
+
+df = pd.DataFrame(data)
+
+# Display the DataFrame
+df
