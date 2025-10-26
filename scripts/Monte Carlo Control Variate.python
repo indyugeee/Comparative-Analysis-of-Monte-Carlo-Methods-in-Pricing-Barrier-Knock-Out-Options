@@ -1,0 +1,281 @@
+import math
+def european_put_option_price(S, X, T, r, sigma):
+    d1 = (math.log(S / X) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
+    d2 = d1 - sigma * math.sqrt(T)
+
+    put_option_price = X * math.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+
+    return put_option_price
+
+def european_call_option_price(S, X, T, r, sigma):
+    d1 = (math.log(S / X) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
+    d2 = d1 - sigma * math.sqrt(T)
+
+    call_option_price = S * norm.cdf(d1) - X * math.exp(-r * T) * norm.cdf(d2)
+
+    return call_option_price
+np.random.seed(2023)
+S = 7450
+K = 8000
+H = 25000
+T = 1
+r = 0.08
+sigma = 0.35
+
+print(european_put_option_price(S, K, T, r, sigma))
+print(european_call_option_price(S, K, T, r, sigma))
+
+#UP AND OUT CALL
+import numpy as np
+from scipy.stats import norm
+
+np.random.seed(2023)
+
+def up_and_out_call_monte_carlo_cv(S, K, H, T, r, sigma, n):
+    dt = T / 252  # asumsikan waktu kerja 252
+    m = int(T / dt)  # banyak partisi
+
+    z_values = np.random.normal(0, 1, (n, m))  # membuat matriks sebesar (banyak sampel x banyak partisi)
+    paths = np.cumprod(np.exp((r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z_values), axis=1)  # jumlahkan deret setiap lintasan
+
+    S_vals = S * paths  # kalikan semua lintasan dengan S0
+    S_max = np.max(S_vals, axis=1)  # ambil setiap nilai S maximum dari setiap lintasan
+    knocked_out = S_max >= H  # menyimpan semua nilai yang menyentuh barrier
+
+    barrier_payoff_call = np.where(knocked_out, 0, np.maximum(S_vals[:, -1] - K, 0))  # memanfaatkan np.where(condition, value_if_true, value_if_false)
+    barrier_call_prices = np.exp(-r * T) * barrier_payoff_call  # nilai call dengan barrier
+
+    vanilla_call = np.maximum(S_vals[:, -1] - K, 0)  # nilai call tanpa barrier
+    vanilla_price_call = np.exp(-r * T) * vanilla_call  # nilai call tanpa barrier
+
+    vanilla_put = np.maximum(K - S_vals[:, -1], 0)  # nilai put tanpa barrier
+    vanilla_price_put = np.exp(-r * T) * vanilla_put  # nilai put tanpa barrier
+
+
+    # Korelasi antara barrier dan non-barrier (opsi beli eropa) serta barrier dan non-barrier (opsi jual eropa)
+    korelasi_eropa_Beli = np.corrcoef(barrier_call_prices,vanilla_price_call)[0, 1]
+    korelasi_eropa_Jual = np.corrcoef(barrier_call_prices,vanilla_price_put)[0, 1]
+
+    I = np.ones(n)
+
+    teta1 = (korelasi_eropa_Beli * np.sqrt(np.var(barrier_call_prices))) / np.sqrt(np.var(vanilla_price_call))
+    teta2 = (korelasi_eropa_Jual * np.sqrt(np.var(barrier_call_prices))) / np.sqrt(np.var(vanilla_price_put))
+
+    C = european_call_option_price(S, K, T, r, sigma)
+    P = european_put_option_price(S, K, T, r, sigma)
+
+    Ci = C * I
+    Pi = P * I
+
+    if abs(korelasi_eropa_Beli) > abs(korelasi_eropa_Jual):
+        Vcon = barrier_call_prices + teta1 * (Ci - vanilla_price_call)
+    else:
+        Vcon = barrier_call_prices + teta2 * (Pi - vanilla_price_put)
+
+    control_variate = np.mean(Vcon)
+    return control_variate, np.var(Vcon)
+
+S = 7450
+K = 8000
+H = 25000
+T = 1
+r = 0.08
+sigma = 0.35
+n = 10000
+
+up_and_out_call_monte_carlo_cv(S, K, H, T, r, sigma, n)
+#option_price,var= up_and_out_call_monte_carlo_cv(S, K, H, T, r, sigma, n)
+#print(f"Monte Carlo Simulated Up-and-out Call Option Price with Control Variate: {option_price:.25f}")
+#var
+
+#DOWN AND OUT CALL
+import numpy as np
+from scipy.stats import norm
+
+np.random.seed(2023)
+
+def down_and_out_call_monte_carlo_cv(S, K, H, T, r, sigma, n):
+    dt = T / 252  # asumsikan waktu kerja 252
+    m = int(T / dt)  # banyak partisi
+
+    z_values = np.random.normal(0, 1, (n, m))  # membuat matriks sebesar (banyak sampel x banyak partisi)
+    paths = np.cumprod(np.exp((r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z_values), axis=1)  # jumlahkan deret setiap lintasan
+
+    S_vals = S * paths  # kalikan semua lintasan dengan S0
+    S_min = np.min(S_vals, axis=1)  # ambil setiap nilai S minimum dari setiap lintasan
+    knocked_out = S_min <= H  # menyimpan semua nilai yang menyentuh barrier
+
+    barrier_payoff_call = np.where(knocked_out, 0, np.maximum(S_vals[:, -1] - K, 0))  # memanfaatkan np.where(condition, value_if_true, value_if_false)
+    barrier_call_prices = np.exp(-r * T) * barrier_payoff_call  # nilai call dengan barrier
+
+    vanilla_call = np.maximum(S_vals[:, -1] - K, 0)  # nilai call tanpa barrier
+    vanilla_price_call = np.exp(-r * T) * vanilla_call  # nilai call tanpa barrier
+
+    vanilla_put = np.maximum(K - S_vals[:, -1], 0)  # nilai put tanpa barrier
+    vanilla_price_put = np.exp(-r * T) * vanilla_put  # nilai put tanpa barrier
+
+
+    # Korelasi antara barrier dan non-barrier (opsi beli eropa) serta barrier dan non-barrier (opsi jual eropa)
+    korelasi_eropa_Beli = np.corrcoef(barrier_call_prices,vanilla_price_call)[0, 1]
+    korelasi_eropa_Jual = np.corrcoef(barrier_call_prices,vanilla_price_put)[0, 1]
+
+    I = np.ones(n)
+
+    teta1 = (korelasi_eropa_Beli * np.sqrt(np.var(barrier_call_prices))) / np.sqrt(np.var(vanilla_price_call))
+    teta2 = (korelasi_eropa_Jual * np.sqrt(np.var(barrier_call_prices))) / np.sqrt(np.var(vanilla_price_put))
+
+    C = european_call_option_price(S, K, T, r, sigma)
+    P = european_put_option_price(S, K, T, r, sigma)
+
+    Ci = C * I
+    Pi = P * I
+
+    if abs(korelasi_eropa_Beli) > abs(korelasi_eropa_Jual):
+        Vcon = barrier_call_prices + teta1 * (Ci - vanilla_price_call)
+    else:
+        Vcon = barrier_call_prices + teta2 * (Pi - vanilla_price_put)
+
+    control_variate = np.mean(Vcon)
+    return control_variate, np.var(Vcon)
+
+# Parameter
+S = 5500  # Harga saham saat ini
+K = 6500   # Harga pelaksanaan
+H = 4500  # Nilai barrier
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.35  # Volatilitas
+n = 10000   # Ukuran sample
+
+option_price,var= down_and_out_call_monte_carlo_cv(S, K, H, T, r, sigma, n)
+print(f"Monte Carlo Simulated Up-and-out Call Option Price with Control Variate: {option_price:.25f}")
+
+#UP AND OUT PUT
+import numpy as np
+from scipy.stats import norm
+
+np.random.seed(2023)
+
+def up_and_out_put_monte_carlo_cv(S, K, H, T, r, sigma, n):
+    dt = T / 252  # asumsikan waktu kerja 252
+    m = int(T / dt)  # banyak partisi
+
+    z_values = np.random.normal(0, 1, (n, m))  # membuat matriks sebesar (banyak sampel x banyak partisi)
+    paths = np.cumprod(np.exp((r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z_values), axis=1)  # jumlahkan deret setiap lintasan
+
+    S_vals = S * paths  # kalikan semua lintasan dengan S0
+    S_max = np.max(S_vals, axis=1)  # ambil setiap nilai S maximum dari setiap lintasan
+    knocked_out = S_max >= H  # menyimpan semua nilai yang menyentuh barrier
+
+    barrier_payoff_put = np.where(knocked_out, 0, np.maximum(K - S_vals[:, -1], 0))  # memanfaatkan np.where(condition, value_if_true, value_if_false)
+    barrier_put_prices = np.exp(-r * T) * barrier_payoff_put  # nilai put dengan barrier
+
+    vanilla_call = np.maximum(S_vals[:, -1] - K, 0)  # nilai call tanpa barrier
+    vanilla_price_call = np.exp(-r * T) * vanilla_call  # nilai call tanpa barrier
+
+    vanilla_put = np.maximum(K - S_vals[:, -1], 0)  # nilai put tanpa barrier
+    vanilla_price_put = np.exp(-r * T) * vanilla_put  # nilai put tanpa barrier
+
+
+    # Korelasi antara barrier dan non-barrier (opsi beli eropa) serta barrier dan non-barrier (opsi jual eropa)
+    korelasi_eropa_Beli = np.corrcoef(barrier_put_prices,vanilla_price_call)[0, 1]
+    korelasi_eropa_Jual = np.corrcoef(barrier_put_prices,vanilla_price_put)[0, 1]
+
+    I = np.ones(n)
+
+    teta1 = (korelasi_eropa_Beli * np.sqrt(np.var(barrier_put_prices))) / np.sqrt(np.var(vanilla_price_call))
+    teta2 = (korelasi_eropa_Jual * np.sqrt(np.var(barrier_put_prices))) / np.sqrt(np.var(vanilla_price_put))
+
+    Br_up = H * np.exp(0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier up
+    Br_down = H * np.exp(-0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier down
+
+    C = european_call_option_price(S, K, T, r, sigma)
+    P = european_put_option_price(S, K, T, r, sigma)
+
+    Ci = C * I
+    Pi = P * I
+
+    if abs(korelasi_eropa_Beli) > abs(korelasi_eropa_Jual):
+        Vcon = barrier_put_prices + teta1 * (Ci - vanilla_price_call)
+    else:
+        Vcon = barrier_put_prices + teta2 * (Pi - vanilla_price_put)
+
+    control_variate = np.mean(Vcon)
+    return control_variate, np.var(Vcon)
+
+# Parameter
+S = 4400  # Harga saham saat ini
+K = 5600   # Harga pelaksanaan
+H = 5300  # Nilai barrier
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.5  # Volatilitas
+n = 32   # Ukuran sample
+
+option_price,var = up_and_out_put_monte_carlo_cv(S, K, H, T, r, sigma, n)
+print(f"Monte Carlo Simulated Up-and-out Call Option Price with Control Variate: {option_price:.25f}")
+
+#DOWN AND OUT PUT
+import numpy as np
+from scipy.stats import norm
+
+np.random.seed(2023)
+
+def down_and_out_put_monte_carlo_cv(S, K, H, T, r, sigma, n):
+    dt = T / 252  # asumsikan waktu kerja 252
+    m = int(T / dt)  # banyak partisi
+
+    z_values = np.random.normal(0, 1, (n, m))  # membuat matriks sebesar (banyak sampel x banyak partisi)
+    paths = np.cumprod(np.exp((r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z_values), axis=1)  # jumlahkan deret setiap lintasan
+
+    S_vals = S * paths  # kalikan semua lintasan dengan S0
+    S_min = np.min(S_vals, axis=1)  # ambil setiap nilai S minimum dari setiap lintasan
+    knocked_out = S_min <= H  # menyimpan semua nilai yang menyentuh barrier
+
+    barrier_payoff_put = np.where(knocked_out, 0, np.maximum(K - S_vals[:, -1], 0))  # memanfaatkan np.where(condition, value_if_true, value_if_false)
+    barrier_put_prices = np.exp(-r * T) * barrier_payoff_put  # nilai put dengan barrier
+
+    vanilla_call = np.maximum(S_vals[:, -1] - K, 0)  # nilai call tanpa barrier
+    vanilla_price_call = np.exp(-r * T) * vanilla_call  # nilai call tanpa barrier
+
+    vanilla_put = np.maximum(K - S_vals[:, -1], 0)  # nilai put tanpa barrier
+    vanilla_price_put = np.exp(-r * T) * vanilla_put  # nilai put tanpa barrier
+
+
+    # Korelasi antara barrier dan non-barrier (opsi beli eropa) serta barrier dan non-barrier (opsi jual eropa)
+    korelasi_eropa_Beli = np.corrcoef(barrier_put_prices,vanilla_price_call)[0, 1]
+    korelasi_eropa_Jual = np.corrcoef(barrier_put_prices,vanilla_price_put)[0, 1]
+
+    I = np.ones(n)
+
+    teta1 = (korelasi_eropa_Beli * np.sqrt(np.var(barrier_put_prices))) / np.sqrt(np.var(vanilla_price_call))
+    teta2 = (korelasi_eropa_Jual * np.sqrt(np.var(barrier_put_prices))) / np.sqrt(np.var(vanilla_price_put))
+
+    Br_up = H * np.exp(0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier up
+    Br_down = H * np.exp(-0.5826*sigma*np.sqrt(T/m)) #koreksi untuk barrier down
+
+    C = european_call_option_price(S, K, T, r, sigma)
+    P = european_put_option_price(S, K, T, r, sigma)
+
+    Ci = C * I
+    Pi = P * I
+
+    if abs(korelasi_eropa_Beli) > abs(korelasi_eropa_Jual):
+        Vcon = barrier_put_prices + teta1 * (Ci - vanilla_price_call)
+    else:
+        Vcon = barrier_put_prices + teta2 * (Pi - vanilla_price_put)
+
+    control_variate = np.mean(Vcon)
+    return control_variate, np.var(Vcon)
+
+# Parameter
+S = 9000  # Harga saham saat ini
+K = 10000   # Harga pelaksanaan
+H = 5000  # Nilai barrier
+T = 1      # Waktu jatuh tempo (dalam tahun)
+r = 0.08   # Tingkat suku bunga bebas risiko
+sigma = 0.35  # Volatilitas
+n = 64   # Ukuran sample
+
+option_price,var = down_and_out_put_monte_carlo_cv(S, K, H, T, r, sigma, n)
+print(f"Monte Carlo Simulated Up-and-out Call Option Price with Control Variate: {option_price:.25f}")
