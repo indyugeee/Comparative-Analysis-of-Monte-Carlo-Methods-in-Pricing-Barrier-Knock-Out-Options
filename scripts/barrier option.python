@@ -1,0 +1,248 @@
+#OPSI BELI BARRIER UP AND IN
+import numpy as np
+from scipy.stats import norm
+np.random.seed(100)
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+N = 252
+
+Br = B*np.exp((0.5826)*sigma*np.sqrt(T/N))
+a = (Br/S)**(-1 + (2*r/sigma**2))
+b = (Br/S)**(1 + (2*r/sigma**2))
+
+def ob_barrier_up_in (S, K, r, T, sigma, B, a, b) :
+  d3 = (np.log(S/Br) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/Br) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/Br) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/Br) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/Br**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/Br**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  opsibeli_barrier_up_in = S * (norm.cdf(d3) + b * (norm.cdf(d6) - norm.cdf(d8))) - K * np.exp(-r * T) * (norm.cdf(d4) + a * (norm.cdf(d5) - norm.cdf(d7)))
+  return opsibeli_barrier_up_in
+
+opsi_beli_barrier_up_in = ob_barrier_up_in (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi beli barrier up and in : {opsi_beli_barrier_up_in:.2f}")
+
+#OPSI BELI BARRIER UP AND OUT
+import numpy as np
+from scipy.stats import norm
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+N = 252
+
+Br = B*np.exp((0.5826)*sigma*np.sqrt(T/N))
+a = (Br/S)**(-1 + (2*r/sigma**2))
+b = (Br/S)**(1 + (2*r/sigma**2))
+
+def ob_barrier_up_out (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/Br) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/Br) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/Br) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/Br) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/Br**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/Br**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  opsibeli_barrier_up_out = S * (norm.cdf(d1) - norm.cdf(d3) - b * (norm.cdf(d6) - norm.cdf(d8))) - K * np.exp(-r * T) * (norm.cdf(d2) - norm.cdf(d4) - a * (norm.cdf(d5) - norm.cdf(d7)))
+  return opsibeli_barrier_up_out
+
+opsi_beli_barrier_up_out = ob_barrier_up_out (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi beli barrier up and out : {opsi_beli_barrier_up_out:.2f}")
+
+#OPSI BELI BARRIER DOWN AND IN
+import numpy as np
+from scipy.stats import norm
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def ob_barrier_down_in (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  if K > B :
+    opsibeli_barrier_down_in = S * b * (1 - norm.cdf(d8)) - K * np.exp(-r * T) * a * (1 - norm.cdf(d7))
+  else :
+    opsibeli_barrier_down_in = S * (norm.cdf(d1) - norm.cdf(d3) + b * (1 - norm.cdf(d6))) - K * np.exp(-r * T) * (norm.cdf(d2) - norm.cdf(d4) + a * (1 - norm.cdf(d5)))
+  return opsibeli_barrier_down_in
+
+opsi_beli_barrier_down_in = ob_barrier_down_in (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi beli barrier down and in : {opsi_beli_barrier_down_in:.2f}")
+
+#OPSI BELI BARRIER DOWN AND OUT
+import numpy as np
+from scipy.stats import norm
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def ob_barrier_down_out (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  if K > B :
+    opsibeli_barrier_down_out = S * (norm.cdf(d1) - b * (1 - norm.cdf(d8))) - K * np.exp(-r * T) * (norm.cdf(d2) - a * (1 - norm.cdf(d7)))
+  else :
+    opsibeli_barrier_down_out = S * (norm.cdf(d3) - b * (1 - norm.cdf(d6))) - K * np.exp(-r * T) * (norm.cdf(d4) - a * (1 - norm.cdf(d5)))
+  return opsibeli_barrier_down_out
+
+opsi_beli_barrier_down_out = ob_barrier_down_out (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi beli barrier down and out : {opsi_beli_barrier_down_out:.2f}")
+
+#OPSI JUAL BARRIER UP AND IN
+import numpy as np
+from scipy.stats import norm
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def oj_barrier_up_in (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  if K > B :
+    opsijual_barrier_up_in = -S * (norm.cdf(d3) - norm.cdf(d1) + b * norm.cdf(d6)) + K * np.exp(-r * T) * (norm.cdf(d4) - norm.cdf(d2) + a * norm.cdf(d5))
+  else :
+    opsijual_barrier_up_in = -S * b * norm.cdf(d8) + K * np.exp(-r * T) * a * norm.cdf(d7)
+  return opsijual_barrier_up_in
+
+opsi_jual_barrier_up_in = oj_barrier_up_in (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi jual barrier up and in : {opsi_jual_barrier_up_in:.2f}")
+
+#OPSI JUAL BARRIER UP AND OUT
+import numpy as np
+from scipy.stats import norm
+
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def oj_barrier_up_out (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  if K > B :
+    opsijual_barrier_up_out = -S * (1 - norm.cdf(d3) - b * norm.cdf(d6)) + K * np.exp(-r * T) * (1 - norm.cdf(d4) - a * norm.cdf(d5))
+  else :
+    opsijual_barrier_up_out = -S * (1 - norm.cdf(d1) - b * norm.cdf(d8)) + K * np.exp(-r * T) * (1 - norm.cdf(d2) - a * norm.cdf(d7))
+  return opsijual_barrier_up_out
+
+opsi_jual_barrier_up_out = oj_barrier_up_out (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi jual barrier up and out : {opsi_jual_barrier_up_out:.2f}")
+
+#OPSI JUAL BARRIER DOWN AND IN
+import numpy as np
+from scipy.stats import norm
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def oj_barrier_down_in (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  opsijual_barrier_down_in = -S * (1 - norm.cdf(d3) + b * (norm.cdf(d8) - norm.cdf(d6)))+ K * np.exp(-r * T) * (1 - norm.cdf(d4) + a * (norm.cdf(d7) - norm.cdf(d5)))
+  return opsijual_barrier_down_in
+
+opsi_jual_barrier_down_in = oj_barrier_down_in (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi jual barrier down and in : {opsi_jual_barrier_down_in:.2f}")
+
+#OPSI JUAL BARRIER DOWN AND OUT
+import numpy as np
+from scipy.stats import norm
+
+
+S = float(input(" Masukkan harga saham pada awal kontrak : "))
+B = float(input(" Masukkan nilai Barrier : "))
+K = float(input(" Masukkan harga strike : "))
+T = float(input(" Masukkan waktu jatuh tempo (dalam tahun) : "))
+r = float(input(" Masukkan tingkat suku bunga : "))
+sigma = float(input(" Masukkan volatilitas saham (dalam tahun) : "))
+
+a = (B/S)**(-1 + (2*r/sigma**2))
+b = (B/S)**(1 + (2*r/sigma**2))
+
+def oj_barrier_down_out (S, K, r, T, sigma, B, a, b) :
+  d1 = (np.log(S/K) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d2 = (np.log(S/K) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d3 = (np.log(S/B) + ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d4 = (np.log(S/B) + ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d5 = (np.log(S/B) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d6 = (np.log(S/B) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d7 = (np.log(S*K/B**2) - ((r - 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  d8 = (np.log(S*K/B**2) - ((r + 0.5 * sigma**2) * T)) / (sigma * np.sqrt(T))
+  opsijual_barrier_down_out = -S * (norm.cdf(d3) - norm.cdf(d1) - b * (norm.cdf(d8) - norm.cdf(d6))) + K * np.exp(-r * T) * (norm.cdf(d4) - norm.cdf(d2) - a * (norm.cdf(d7) - norm.cdf(d5)))
+  return opsijual_barrier_down_out
+
+opsi_jual_barrier_down_out = oj_barrier_down_out (S, K, r, T, sigma, B, a, b)
+print(f"Harga opsi jual barrier down and out : {opsi_jual_barrier_down_out:.2f}")
