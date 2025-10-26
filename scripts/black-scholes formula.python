@@ -1,0 +1,43 @@
+#opsi beli
+import math
+from scipy.stats import norm
+
+def opsibeli_black_scholes(St, K, T, t, r, sigma):
+    d1 = (math.log(St / K) + (r + 0.5 * sigma**2) * (T - t)) / (sigma * math.sqrt(T - t))
+    d2 = d1 - sigma * math.sqrt(T)
+    ob_Eropa = St * norm.cdf(d1) - K * math.exp(-r * (T-t)) * norm.cdf(d2)
+    return ob_Eropa
+
+# Masukkan nilai-nilai yang diperlukan
+St = float(input("Masukkan harga aset dasar pada waktu t : "))
+K = float(input("Masukkan harga strike opsi : "))
+T = float(input("Masukkan waktu kedaluwarsa opsi (dalam tahun): "))
+t = float(input("Masukkan t : "))
+r = float(input("Masukkan tingkat bunga bebas risiko : "))
+sigma = float(input("Masukkan volatilitas saham (dalam tahun) : "))
+
+# Hitung dan cetak harga opsi beli Eropa menggunakan rumus Black-Scholes
+opsi_beli = opsibeli_black_scholes(St, K, T, t, r, sigma)
+print(f"Harga opsi beli Eropa: {opsi_beli:.2f}")
+
+#opsi jual
+import math
+from scipy.stats import norm
+
+def opsijual_black_scholes(St, K, T, r, sigma):
+    d1 = (math.log(St / K) + (r + 0.5 * sigma**2) * (T )) / (sigma * math.sqrt(T))
+    d2 = d1 - sigma * math.sqrt(T)
+    oj_Eropa = K * math.exp(-r * (T)) * norm.cdf(-d2) - St * norm.cdf(-d1)
+    return oj_Eropa
+
+# Masukkan nilai-nilai yang diperlukan
+St = float(input("Masukkan harga aset dasar pada waktu t : "))
+K = float(input("Masukkan harga strike opsi : "))
+T = float(input("Masukkan waktu kedaluwarsa opsi (dalam tahun): "))
+r = float(input("Masukkan tingkat bunga bebas risiko : "))
+sigma = float(input("Masukkan volatilitas saham (dalam tahun) : "))
+
+# Hitung dan cetak harga opsi jual Eropa menggunakan rumus Black-Scholes
+opsi_jual = opsijual_black_scholes(St, K, T, r, sigma)
+print(f"Harga opsi jual Eropa: {opsi_jual:.2f}")
+
